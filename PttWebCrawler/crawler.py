@@ -9,6 +9,7 @@ import json
 import requests
 import argparse
 import time
+import datetime
 import codecs
 from bs4 import BeautifulSoup
 from six import u
@@ -63,7 +64,8 @@ class PttWebCrawler(object):
                 self.parse_article(article_id, board)
 
     def parse_articles(self, start, end, board, path='.', timeout=3):
-            filename = board + '-' + str(start) + '-' + str(end) + '.json'
+            # filename = board + '-' + str(start) + '-' + str(end) + '.json'
+            filename = board + '.json'
             filename = os.path.join(path, filename)
             # self.store(filename, u'{"articles": [', 'w')
             self.store(filename, u'[', 'w')
@@ -91,7 +93,8 @@ class PttWebCrawler(object):
                             self.store(filename, self.parse(link, article_id, board), 'a')
                         else:
                             self.store(filename, self.parse(link, article_id, board) + ',\n', 'a')
-                    except:
+                    except Exception as e:
+                        print(e)
                         pass
                 time.sleep(0.1)
             self.store(filename, u']', 'a')
@@ -117,11 +120,13 @@ class PttWebCrawler(object):
         author = ''
         title = ''
         date = ''
+        ts = 0
         if metas:
             author = metas[0].select('span.article-meta-value')[0].string if metas[0].select('span.article-meta-value')[0] else author
             title = metas[1].select('span.article-meta-value')[0].string if metas[1].select('span.article-meta-value')[0] else title
             date = metas[2].select('span.article-meta-value')[0].string if metas[2].select('span.article-meta-value')[0] else date
-
+            ts = int(time.mktime(datetime.datetime.strptime(date, "%a %b %d %H:%M:%S %Y").timetuple()))
+            #print(ts)
             # remove meta nodes
             for meta in metas:
                 meta.extract()
@@ -186,6 +191,7 @@ class PttWebCrawler(object):
             'article_title': title,
             'author': author,
             'date': date,
+            'timestamp': ts,
             'content': content,
             'ip': ip,
             'message_count': message_count,
