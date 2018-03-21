@@ -36,6 +36,7 @@ class PttWebCrawler(object):
         parser.add_argument('-b', metavar='BOARD_NAME', help='Board name', required=True)
         group = parser.add_mutually_exclusive_group(required=True)
         group.add_argument('-i', metavar=('START_INDEX', 'END_INDEX'), type=int, nargs=2, help="Start and end index")
+        group.add_argument('-o', metavar='OFFSET', type=int, help="Offset from latest")
         group.add_argument('-a', metavar='ARTICLE_ID', help="Article ID")
         parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
 
@@ -52,6 +53,11 @@ class PttWebCrawler(object):
                 else:
                     end = args.i[1]
                 self.parse_articles(start, end, board)
+            elif args.o >= 0:
+                end = self.getLastPage(board)
+                print(end)
+                start = end - args.o
+                self.parse_articles(start, end, board)
             else:  # args.a
                 article_id = args.a
                 self.parse_article(article_id, board)
@@ -59,7 +65,10 @@ class PttWebCrawler(object):
     def parse_articles(self, start, end, board, path='.', timeout=3):
             filename = board + '-' + str(start) + '-' + str(end) + '.json'
             filename = os.path.join(path, filename)
-            self.store(filename, u'{"articles": [', 'w')
+            # self.store(filename, u'{"articles": [', 'w')
+            self.store(filename, u'[', 'w')
+            print("Start = {0}".format(start))
+            print("End = {0}".format(end))
             for i in range(end-start+1):
                 index = start + i
                 print('Processing index:', str(index))
@@ -85,7 +94,7 @@ class PttWebCrawler(object):
                     except:
                         pass
                 time.sleep(0.1)
-            self.store(filename, u']}', 'a')
+            self.store(filename, u']', 'a')
             return filename
 
     def parse_article(self, article_id, board, path='.'):
@@ -155,7 +164,7 @@ class PttWebCrawler(object):
             push_content = push.find('span', 'push-content').strings
             push_content = ' '.join(push_content)[1:].strip(' \t\n\r')  # remove ':'
             push_ipdatetime = push.find('span', 'push-ipdatetime').string.strip(' \t\n\r')
-            messages.append( {'push_tag': push_tag, 'push_userid': push_userid, 'push_content': push_content, 'push_ipdatetime': push_ipdatetime} )
+            # messages.append( {'push_tag': push_tag, 'push_userid': push_userid, 'push_content': push_content, 'push_ipdatetime': push_ipdatetime} )
             if push_tag == u'推':
                 p += 1
             elif push_tag == u'噓':
@@ -179,7 +188,7 @@ class PttWebCrawler(object):
             'date': date,
             'content': content,
             'ip': ip,
-            'message_conut': message_count,
+            'message_count': message_count,
             'messages': messages
         }
         # print 'original:', d
