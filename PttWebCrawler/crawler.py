@@ -166,8 +166,15 @@ class PttWebCrawler(object):
                 continue
             else:
                 https_url = url.replace("http://", "https://")
-                urls.append(https_url)
-        # print(urls)
+                if https_url.lower().endswith(".jpg"):
+                    urls.append(https_url)
+                else:
+                    if https_url[-1] = '/':
+                        https_url = https_url[0:-1] # remove tailing '/' if any
+                    https_url = https_url + ".jpg"
+                    https_url = https_url.replace('https://imgur.com', 'https://i.imgur.com')
+                    urls.append(https_url)
+        print(urls)
 
 
         # push messages
