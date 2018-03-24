@@ -13,6 +13,7 @@ import datetime
 import codecs
 from bs4 import BeautifulSoup
 from six import u
+from urlextract import URLExtract
 
 __version__ = '1.0'
 
@@ -109,6 +110,7 @@ class PttWebCrawler(object):
 
     @staticmethod
     def parse(link, article_id, board, timeout=3):
+        extractor = URLExtract()
         print('Processing article:', article_id)
         resp = requests.get(url=link, cookies={'over18': '1'}, verify=VERIFY, timeout=timeout)
         if resp.status_code != 200:
@@ -155,7 +157,18 @@ class PttWebCrawler(object):
         filtered = [x for x in filtered if article_id not in x]  # remove last line containing the url of the article
         content = ' '.join(filtered)
         content = re.sub(r'(\s)+', ' ', content)
-        # print 'content', content
+
+        # Parse imgur URL
+        candidate_urls = extractor.find_urls(content)
+        urls = list()
+        for url in candidate_urls:
+            if 'imgur.com' not in url:
+                continue
+            else:
+                https_url = url.replace("http://", "https://")
+                urls.append(https_url)
+        # print(urls)
+
 
         # push messages
         p, b, n = 0, 0, 0
@@ -195,7 +208,8 @@ class PttWebCrawler(object):
             'content': content,
             'ip': ip,
             'message_count': message_count,
-            'messages': messages
+            'messages': messages,
+            'image_links': urls
         }
         # print 'original:', d
         return json.dumps(data, sort_keys=True, ensure_ascii=False)
