@@ -189,7 +189,7 @@ class PttWebCrawler(object):
             push_content = push.find('span', 'push-content').strings
             push_content = ' '.join(push_content)[1:].strip(' \t\n\r')  # remove ':'
             push_ipdatetime = push.find('span', 'push-ipdatetime').string.strip(' \t\n\r')
-            # messages.append( {'push_tag': push_tag, 'push_userid': push_userid, 'push_content': push_content, 'push_ipdatetime': push_ipdatetime} )
+            messages.append( {'push_tag': push_tag, 'push_userid': push_userid, 'push_content': push_content, 'push_ipdatetime': push_ipdatetime} )
             if push_tag == u'推':
                 p += 1
             elif push_tag == u'噓':
