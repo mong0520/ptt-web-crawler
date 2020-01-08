@@ -1,0 +1,10 @@
+#!/bin/bash
+
+mv Beauty.json Beauty.json.old
+python3 PttWebCrawler/crawler.py -b Beauty -o $1
+#mongoimport --db ptt --collection beauty --type json --file Beauty.json --jsonArray --mode merge --upsertFields  article_id
+mongoimport --host Cluster0-shard-0/cluster0-shard-00-00-<ID>.mongodb.net:27017,cluster0-shard-00-01-<ID>.mongodb.net:27017,cluster0-shard-00-02-<ID>.mongodb.net:27017 --ssl --username admin --password <PASSWORD> --authenticationDatabase admin --db <DB> --collection <COLLECTION> --type json --file Beauty.json --jsonArray --mode merge --upsertFields article_id
+
+
+# Run this command to make artical id be unique
+# db.beauty.createIndex( { "article_id": 1 }, { unique: true } )i
